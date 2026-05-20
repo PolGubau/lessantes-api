@@ -13,9 +13,6 @@ DATA_LICENSE_URL = "https://creativecommons.org/licenses/by/4.0/"
 #   SUPABASE_URL
 #   SUPABASE_ANON_KEY
 
-# Observability
-[observability]
-enabled = true
 
 # Custom route. Requires:
 #   1. polgubau.com zone exists in your Cloudflare account
@@ -23,3 +20,15 @@ enabled = true
 [[routes]]
 pattern = "api.lessantes.polgubau.com/*"
 zone_name = "polgubau.com"
+
+
+# Observability
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+[observability.traces]
+enabled = false
