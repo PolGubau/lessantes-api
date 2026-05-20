@@ -14,7 +14,6 @@ export const EventTypeSchema = z.enum([
   "cursa",
   "jocs",
   "contes",
-  "barram",
   "altres",
 ]);
 
