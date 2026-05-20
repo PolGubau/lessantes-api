@@ -1,7 +1,7 @@
 {
   "name": "les-santes-api",
   "version": "0.1.0",
-  "description": "Public Open Data API for Les Santes — Festa Major de Mataró. CC BY 4.0.",
+  "description": "Public Open Data API for Les Santes - Festa Major de Mataró. CC BY 4.0.",
   "private": false,
   "license": "MIT",
   "type": "module",
@@ -23,7 +23,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241218.0",
     "typescript": "^5.7.2",
-    "wrangler": "^3.95.0"
+    "wrangler": "^4.93.0"
   },
   "engines": {
     "node": ">=20"

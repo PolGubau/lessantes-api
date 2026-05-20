@@ -1,1 +1,79 @@
-import { SupabaseClient } from \"@supabase/supabase-js\";\nimport { Festival, Day } from \"../schemas/festival\";\n\nexport class FestivalService {\n  constructor(private db: SupabaseClient) {}\n\n  async getFestival(id: string): Promise<Festival | null> {\n    const { data, error } = await this.db\n      .from(\"festivals\")\n      .select(\"*\")\n      .eq(\"id\", id)\n      .single();\n\n    if (error) return null;\n    return data as Festival;\n  }\n\n  async listDays(festivalId: string): Promise<Day[]> {\n    // We derive days from the events table to ensure we only show days with content\n    const { data, error } = await this.db.rpc(\"get_festival_days\", {\n      p_festival_id: festivalId,\n    });\n\n    // Fallback if RPC is not defined or fails: manual aggregation\n    if (error) {\n      const { data: events } = await this.db\n        .from(\"events\")\n        .select(\"start_time\")\n        .eq(\"festival_id\", festivalId);\n\n      const daysMap = new Map<string, number>();\n      events?.forEach((e) => {\n        const date = e.start_time.split(\"T\")[0];\n        daysMap.set(date, (daysMap.get(date) || 0) + 1);\n      });\n\n      return Array.from(daysMap.entries())\n        .sort()\n        .map(([date, count]) => ({\n          date,\n          label: this.getWeekday(date),\n          event_count: count,\n        }));\n    }\n\n    return data;\n  }\n\n  async listLocations(festivalId: string) {\n    const { data, error } = await this.db\n      .from(\"events\")\n      .select(\"location_name, location_lat, location_lng\")\n      .eq(\"festival_id\", festivalId)\n      .not(\"location_name\", \"is\", null);\n\n    if (error) throw error;\n\n    // Unique locations\n    const unique = new Map<string, any>();\n    data.forEach((l) => {\n      if (!unique.has(l.location_name)) {\n        unique.set(l.location_name, {\n          name: l.location_name,\n          lat: l.location_lat,\n          lng: l.location_lng,\n        });\n      }\n    });\n\n    return Array.from(unique.values());\n  }\n\n  private getWeekday(dateStr: string) {\n    const date = new Date(dateStr);\n    return new Intl.DateTimeFormat(\"ca-ES\", { weekday: \"long\" }).format(date);\n  }\n}\n
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Festival, Day } from "../schemas/festival";
+
+export class FestivalService {
+  constructor(private db: SupabaseClient) {}
+
+  async getFestival(id: string): Promise<Festival | null> {
+    const { data, error } = await this.db
+      .from("festivals")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) return null;
+    return data as Festival;
+  }
+
+  async listDays(festivalId: string): Promise<Day[]> {
+    // Try RPC first; fall back to manual aggregation if not defined.
+    const { data, error } = await this.db.rpc("get_festival_days", {
+      p_festival_id: festivalId,
+    });
+
+    if (error) {
+      const { data: events } = await this.db
+        .from("events")
+        .select("start_time")
+        .eq("festival_id", festivalId);
+
+      const daysMap = new Map<string, number>();
+      events?.forEach((e) => {
+        const startTime = e.start_time as string | undefined;
+        if (!startTime) return;
+        const date = startTime.split("T")[0];
+        if (!date) return;
+        daysMap.set(date, (daysMap.get(date) ?? 0) + 1);
+      });
+
+      return Array.from(daysMap.entries())
+        .sort()
+        .map(([date, count]) => ({
+          date,
+          label: this.getWeekday(date),
+          event_count: count,
+        }));
+    }
+
+    return data as Day[];
+  }
+
+  async listLocations(festivalId: string) {
+    const { data, error } = await this.db
+      .from("events")
+      .select("location_name, location_lat, location_lng")
+      .eq("festival_id", festivalId)
+      .not("location_name", "is", null);
+
+    if (error) throw error;
+
+    const unique = new Map<string, { name: string; lat: number | null; lng: number | null }>();
+    (data ?? []).forEach((l) => {
+      const name = l.location_name as string;
+      if (!unique.has(name)) {
+        unique.set(name, {
+          name,
+          lat: (l.location_lat as number | null) ?? null,
+          lng: (l.location_lng as number | null) ?? null,
+        });
+      }
+    });
+
+    return Array.from(unique.values());
+  }
+
+  private getWeekday(dateStr: string) {
+    const date = new Date(dateStr);
+    return new Intl.DateTimeFormat("ca-ES", { weekday: "long" }).format(date);
+  }
+}

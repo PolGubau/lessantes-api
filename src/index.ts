@@ -1,1 +1,76 @@
-import { OpenAPIHono } from \"@hono/zod-openapi\";\nimport { swaggerUI } from \"@hono/swagger-ui\";\nimport { cors } from \"hono/cors\";\nimport { etag } from \"hono/etag\";\nimport { AppEnv } from \"./env\";\nimport events from \"./routes/events\";\nimport info from \"./routes/info\";\n\nconst app = new OpenAPIHono<AppEnv>();\n\n// 1. Middlewares\napp.use(\"*\", cors());\napp.use(\"*\", etag());\n\n// 2. Routes\napp.route(\"/v1/events\", events);\napp.route(\"/v1\", info);\n\n// 3. Documentation\napp.doc(\"/doc\", {\n  openapi: \"3.0.0\",\n  info: {\n    version: \"1.0.0\",\n    title: \"Les Santes Open Data API\",\n    description:\n      \"Official Open Data API for the Les Santes festival in Matar\u00f3. Developed by Pol Gubau Amores.\",\n    contact: {\n      name: \"Pol Gubau Amores\",\n      url: \"https://polgubau.com\",\n    },\n    license: {\n      name: \"CC BY 4.0\",\n      url: \"https://creativecommons.org/licenses/by/4.0/\",\n    },\n  },\n});\n\napp.get(\"/docs\", swaggerUI({ url: \"/doc\" }));\n\napp.get(\"/\", (c) => {\n  return c.html(`\n    <!DOCTYPE html>\n    <html>\n      <head>\n        <title>Les Santes API</title>\n        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n        <style>\n          body { font-family: system-ui, sans-serif; line-height: 1.5; max-width: 800px; margin: 40px auto; padding: 0 20px; }\n          code { background: #f4f4f4; padding: 2px 4px; border-radius: 4px; }\n          a { color: #e11d48; text-decoration: none; }\n          a:hover { text-decoration: underline; }\n        </style>\n      </head>\n      <body>\n        <h1>\ud83c\udfa1 Les Santes Open Data API</h1>\n        <p>Benvinguts a l'API de dades obertes de Les Santes \u2014 Festa Major de Matar\u00f3.</p>\n        <p>Aquesta API permet consultar la programaci\u00f3 d'actes, ubicacions i avisos en temps real.</p>\n        \n        <h2>Comen\u00e7ar</h2>\n        <p>Consulta la documentaci\u00f3 interactiva a <a href=\"/docs\">/docs</a>.</p>\n        \n        <h2>Exemples</h2>\n        <ul>\n          <li><code>GET <a href=\"/v1/events\">/v1/events</a></code> - Tots els actes</li>\n          <li><code>GET <a href=\"/v1/days\">/v1/days</a></code> - Dies de la festa</li>\n          <li><code>GET <a href=\"/v1/locations\">/v1/locations</a></code> - Espais</li>\n        </ul>\n\n        <hr>\n        <p><small>Desenvolupat per <a href=\"https://polgubau.com\">Pol Gubau Amores</a>. Dades sota llic\u00e8ncia <a href=\"/v1/festival\">CC BY 4.0</a>.</small></p>\n      </body>\n    </html>\n  `);\n});\n\nexport default app;\n
+import { OpenAPIHono } from "@hono/zod-openapi";
+import { swaggerUI } from "@hono/swagger-ui";
+import { cors } from "hono/cors";
+import { etag } from "hono/etag";
+import type { AppEnv } from "./env";
+import events from "./routes/events";
+import info from "./routes/info";
+
+const app = new OpenAPIHono<AppEnv>();
+
+// Middlewares
+app.use("*", cors());
+app.use("*", etag());
+
+// Routes
+app.route("/v1/events", events);
+app.route("/v1", info);
+
+// OpenAPI spec
+app.doc("/doc", {
+  openapi: "3.0.0",
+  info: {
+    version: "1.0.0",
+    title: "Les Santes Open Data API",
+    description:
+      "Official Open Data API for the Les Santes festival in Mataró. Developed by Pol Gubau Amores.",
+    contact: { name: "Pol Gubau Amores", url: "https://polgubau.com" },
+    license: {
+      name: "CC BY 4.0",
+      url: "https://creativecommons.org/licenses/by/4.0/",
+    },
+  },
+  servers: [
+    { url: "https://api.lessantes.polgubau.com", description: "Production" },
+    { url: "http://localhost:8787", description: "Local dev" },
+  ],
+});
+
+// Swagger UI
+app.get("/docs", swaggerUI({ url: "/doc" }));
+
+// Landing
+app.get("/", (c) => {
+  return c.html(`<!DOCTYPE html>
+<html lang="ca">
+  <head>
+    <meta charset="utf-8" />
+    <title>Les Santes API</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body { font-family: system-ui, sans-serif; line-height: 1.5; max-width: 720px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; }
+      code { background: #f4f4f4; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+      a { color: #e11d48; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      hr { border: 0; border-top: 1px solid #eee; margin: 32px 0; }
+    </style>
+  </head>
+  <body>
+    <h1>Les Santes Open Data API</h1>
+    <p>API pública i gratuïta de dades obertes de Les Santes - Festa Major de Mataró.</p>
+    <p>Documentació interactiva: <a href="/docs">/docs</a> · OpenAPI: <a href="/doc">/doc</a></p>
+    <h2>Exemples</h2>
+    <ul>
+      <li><code>GET <a href="/v1/events">/v1/events</a></code> - tots els actes</li>
+      <li><code>GET <a href="/v1/days">/v1/days</a></code> - dies de la festa</li>
+      <li><code>GET <a href="/v1/locations">/v1/locations</a></code> - espais</li>
+      <li><code>GET <a href="/v1/announcements">/v1/announcements</a></code> - avisos</li>
+      <li><code>GET <a href="/v1/festival">/v1/festival</a></code> - informació general</li>
+    </ul>
+    <hr />
+    <p><small>Desenvolupat per <a href="https://polgubau.com">Pol Gubau Amores</a>. Dades sota <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a> · Atribució obligatòria.</small></p>
+  </body>
+</html>`);
+});
+
+export default app;

@@ -17,7 +17,9 @@ DATA_LICENSE_URL = "https://creativecommons.org/licenses/by/4.0/"
 [observability]
 enabled = true
 
-# Optional custom route (configure DNS after first deploy)
-# [[routes]]
-# pattern = "api.lessantes.cat/*"
-# zone_name = "lessantes.cat"
+# Custom route. Requires:
+#   1. polgubau.com zone exists in your Cloudflare account
+#   2. A DNS record for api.lessantes (CNAME, proxied) in that zone
+[[routes]]
+pattern = "api.lessantes.polgubau.com/*"
+zone_name = "polgubau.com"

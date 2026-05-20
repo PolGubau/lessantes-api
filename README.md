@@ -1,1 +1,53 @@
-# Les Santes Open Data API \ud83c\udfa1\n\nPublic, free, and developer-focused API for **Les Santes \u2014 Festa Major de Matar\u00f3**.\n\nThis API provides structured data about festival events, locations, and real-time announcements. It is built with **Hono** and runs on **Cloudflare Workers**, querying a **Supabase** database.\n\n## Base URL\n\n`https://api.lessantes.cat` (Production)\n\n## Documentation\n\nInteractive Swagger UI documentation is available at [/docs](https://api.lessantes.cat/docs).\n\n## Endpoints\n\n- `GET /v1/events` - List all events (supports filtering by `day`, `type`, `category`, `q` search).\n- `GET /v1/events/{id}` - Detailed info for a specific event.\n- `GET /v1/locations` - All locations used in the programme.\n- `GET /v1/days` - Festival days with event counts.\n- `GET /v1/announcements` - Real-time updates and notifications.\n- `GET /v1/festival` - Current festival metadata.\n\n## Licensing\n\n- **Data**: Licensed under [CC BY 4.0](./DATA-LICENSE.md). Attribution to **Pol Gubau Amores** is required.\n- **Code**: Licensed under [MIT](./LICENSE).\n\n## Development\n\n1. Install dependencies:\n   ```bash\n   npm install\n   ```\n2. Configure environment:\n   Copy `.dev.vars.example` to `.dev.vars` and add your Supabase credentials.\n3. Run locally:\n   ```bash\n   npm run dev\n   ```\n4. Deploy:\n   ```bash\n   npm run deploy\n   ```\n\n---\nCreated with \u2764\ufe0f by [Pol Gubau Amores](https://polgubau.com).\n
+# Les Santes Open Data API 🎡
+
+Public, free, developer-focused API for **Les Santes — Festa Major de Mataró**.
+
+Built with [Hono](https://hono.dev) on [Cloudflare Workers](https://workers.cloudflare.com), reading from a Supabase Postgres database.
+
+## Base URL
+
+Production: `https://api.lessantes.polgubau.com`
+
+## Documentation
+
+- Interactive Swagger UI: [`/docs`](https://api.lessantes.polgubau.com/docs)
+- OpenAPI 3.0 spec: [`/doc`](https://api.lessantes.polgubau.com/doc)
+
+## Endpoints
+
+| Method | Path                       | Description                                                   |
+| ------ | -------------------------- | ------------------------------------------------------------- |
+| GET    | `/v1/events`               | List events (filters: `day`, `type`, `category`, `kind`, `q`) |
+| GET    | `/v1/events/{id}`          | Get event by id                                               |
+| GET    | `/v1/days`                 | Festival days with event counts                               |
+| GET    | `/v1/locations`            | Unique locations used in the programme                        |
+| GET    | `/v1/announcements`        | Active announcements                                          |
+| GET    | `/v1/festival`             | Current festival metadata                                     |
+
+## Licensing
+
+- **Code**: [MIT](./LICENSE) — © Pol Gubau Amores
+- **Data**: [CC BY 4.0](./DATA-LICENSE.md) — attribution to **Pol Gubau Amores** required
+
+## Local development
+
+```bash
+pnpm install
+cp .dev.vars.example .dev.vars   # add your Supabase URL + anon key
+pnpm dev                          # http://localhost:8787
+```
+
+## Deploy
+
+```bash
+pnpm wrangler login
+pnpm wrangler secret put SUPABASE_URL
+pnpm wrangler secret put SUPABASE_ANON_KEY
+pnpm deploy
+```
+
+The custom route `api.lessantes.polgubau.com/*` is configured in `wrangler.toml`. Make sure a DNS record for `api.lessantes` (CNAME, proxied) exists in the `polgubau.com` Cloudflare zone.
+
+---
+
+Made by [Pol Gubau Amores](https://polgubau.com).

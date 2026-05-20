@@ -1,1 +1,19 @@
-import { SupabaseClient } from \"@supabase/supabase-js\";\nimport { Announcement } from \"../schemas/announcement\";\n\nexport class AnnouncementService {\n  constructor(private db: SupabaseClient) {}\n\n  async list(festivalId: string, limit = 10) {\n    const { data, error } = await this.db\n      .from(\"announcements\")\n      .select(\"*\")\n      .eq(\"festival_id\", festivalId)\n      .eq(\"is_active\", true)\n      .order(\"created_at\", { ascending: false })\n      .limit(limit);\n\n    if (error) throw error;\n    return data as Announcement[];\n  }\n}\n
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Announcement } from "../schemas/announcement";
+
+export class AnnouncementService {
+  constructor(private db: SupabaseClient) {}
+
+  async list(festivalId: string, limit = 10) {
+    const { data, error } = await this.db
+      .from("announcements")
+      .select("*")
+      .eq("festival_id", festivalId)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    return (data ?? []) as Announcement[];
+  }
+}

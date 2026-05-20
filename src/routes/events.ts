@@ -1,1 +1,84 @@
-import { createRoute, OpenAPIHono } from \"@hono/zod-openapi\";\nimport { AppEnv } from \"../env\";\nimport { EventIdParamSchema, EventListQuerySchema, EventSchema } from \"../schemas/event\";\nimport { ErrorSchema, paginated, PaginationQuerySchema } from \"../schemas/common\";\nimport { getSupabase } from \"../lib/supabase\";\nimport { EventService } from \"../services/event\";\n\nconst events = new OpenAPIHono<AppEnv>();\n\nconst listRoute = createRoute({\n  method: \"get\",\n  path: \"/\",\n  tags: [\"Events\"],\n  summary: \"List all events\",\n  description: \"Retrieve a paginated list of festival events with optional filters.\",\n  request: {\n    query: EventListQuerySchema.merge(PaginationQuerySchema),\n  },\n  responses: {\n    200: {\n      content: {\n        \"application/json\": {\n          schema: paginated(EventSchema),\n        },\n      },\n      description: \"List of events\",\n    },\n  },\n});\n\nconst getRoute = createRoute({\n  method: \"get\",\n  path: \"/{id}\",\n  tags: [\"Events\"],\n  summary: \"Get event by ID\",\n  request: {\n    params: EventIdParamSchema,\n  },\n  responses: {\n    200: {\n      content: {\n        \"application/json\": {\n          schema: EventSchema,\n        },\n      },\n      description: \"The event object\",\n    },\n    404: {\n      content: {\n        \"application/json\": {\n          schema: ErrorSchema,\n        },\n      },\n      description: \"Event not found\",\n    },\n  },\n});\n\nevents.openapi(listRoute, async (c) => {\n  const query = c.req.valid(\"query\");\n  const db = getSupabase(c.env);\n  const service = new EventService(db);\n\n  const { data, total } = await service.list(\n    c.env.FESTIVAL_ID,\n    query,\n    query.limit,\n    query.offset\n  );\n\n  return c.json({\n    data,\n    meta: {\n      total,\n      limit: query.limit,\n      offset: query.offset,\n      has_more: query.offset + query.limit < total,\n    },\n  });\n});\n\nevents.openapi(getRoute, async (c) => {\n  const { id } = c.req.valid(\"param\");\n  const db = getSupabase(c.env);\n  const service = new EventService(db);\n\n  const event = await service.findById(c.env.FESTIVAL_ID, id);\n  if (!event) {\n    return c.json(\n      {\n        error: { code: \"not_found\", message: `Event ${id} not found` },\n      },\n      404\n    );\n  }\n\n  return c.json(event);\n});\n\nexport default events;\n
+import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import type { AppEnv } from "../env";
+import { EventIdParamSchema, EventListQuerySchema, EventSchema } from "../schemas/event";
+import { ErrorSchema, paginated, PaginationQuerySchema } from "../schemas/common";
+import { getSupabase } from "../lib/supabase";
+import { EventService } from "../services/event";
+
+const events = new OpenAPIHono<AppEnv>();
+
+const listRoute = createRoute({
+  method: "get",
+  path: "/",
+  tags: ["Events"],
+  summary: "List all events",
+  description: "Retrieve a paginated list of festival events with optional filters.",
+  request: {
+    query: EventListQuerySchema.merge(PaginationQuerySchema),
+  },
+  responses: {
+    200: {
+      content: { "application/json": { schema: paginated(EventSchema) } },
+      description: "List of events",
+    },
+  },
+});
+
+const getRoute = createRoute({
+  method: "get",
+  path: "/{id}",
+  tags: ["Events"],
+  summary: "Get event by ID",
+  request: { params: EventIdParamSchema },
+  responses: {
+    200: {
+      content: { "application/json": { schema: EventSchema } },
+      description: "The event object",
+    },
+    404: {
+      content: { "application/json": { schema: ErrorSchema } },
+      description: "Event not found",
+    },
+  },
+});
+
+events.openapi(listRoute, async (c) => {
+  const query = c.req.valid("query");
+  const db = getSupabase(c.env);
+  const service = new EventService(db);
+
+  const { data, total } = await service.list(
+    c.env.FESTIVAL_ID,
+    query,
+    query.limit,
+    query.offset
+  );
+
+  return c.json({
+    data,
+    meta: {
+      total,
+      limit: query.limit,
+      offset: query.offset,
+      has_more: query.offset + query.limit < total,
+    },
+  });
+});
+
+events.openapi(getRoute, async (c) => {
+  const { id } = c.req.valid("param");
+  const db = getSupabase(c.env);
+  const service = new EventService(db);
+
+  const event = await service.findById(c.env.FESTIVAL_ID, id);
+  if (!event) {
+    return c.json(
+      { error: { code: "not_found", message: `Event ${id} not found` } },
+      404
+    );
+  }
+
+  return c.json(event, 200);
+});
+
+export default events;
