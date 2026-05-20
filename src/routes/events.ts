@@ -1,7 +1,12 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { AppEnv } from "../env";
 import { EventIdParamSchema, EventListQuerySchema, EventSchema } from "../schemas/event";
-import { ErrorSchema, paginated, PaginationQuerySchema } from "../schemas/common";
+import {
+  ErrorSchema,
+  FestivalIdQuerySchema,
+  paginated,
+  PaginationQuerySchema,
+} from "../schemas/common";
 import { getSupabase } from "../lib/supabase";
 import { EventService } from "../services/event";
 
@@ -12,9 +17,10 @@ const listRoute = createRoute({
   path: "/",
   tags: ["Events"],
   summary: "List all events",
-  description: "Retrieve a paginated list of festival events with optional filters.",
+  description:
+    "Retrieve a paginated list of festival events with optional filters. Use `festival_id` to target a specific edition; defaults to the current one.",
   request: {
-    query: EventListQuerySchema.merge(PaginationQuerySchema),
+    query: FestivalIdQuerySchema.merge(EventListQuerySchema).merge(PaginationQuerySchema),
   },
   responses: {
     200: {
@@ -29,6 +35,8 @@ const getRoute = createRoute({
   path: "/{id}",
   tags: ["Events"],
   summary: "Get event by ID",
+  description:
+    "Event IDs are globally unique across festivals, so no `festival_id` is required.",
   request: { params: EventIdParamSchema },
   responses: {
     200: {
@@ -47,8 +55,9 @@ events.openapi(listRoute, async (c) => {
   const db = getSupabase(c.env);
   const service = new EventService(db);
 
+  const festivalId = query.festival_id ?? c.env.FESTIVAL_ID;
   const { data, total } = await service.list(
-    c.env.FESTIVAL_ID,
+    festivalId,
     query,
     query.limit,
     query.offset
@@ -70,7 +79,7 @@ events.openapi(getRoute, async (c) => {
   const db = getSupabase(c.env);
   const service = new EventService(db);
 
-  const event = await service.findById(c.env.FESTIVAL_ID, id);
+  const event = await service.findById(id);
   if (!event) {
     return c.json(
       { error: { code: "not_found", message: `Event ${id} not found` } },

@@ -14,12 +14,7 @@ DATA_LICENSE_URL = "https://creativecommons.org/licenses/by/4.0/"
 #   SUPABASE_ANON_KEY
 
 
-# Custom route. Requires:
-#   1. polgubau.com zone exists in your Cloudflare account
-#   2. A DNS record for api.lessantes (CNAME, proxied) in that zone
-[[routes]]
-pattern = "api.lessantes.polgubau.com/*"
-zone_name = "polgubau.com"
+
 
 
 # Observability

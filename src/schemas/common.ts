@@ -9,6 +9,24 @@ export const ErrorSchema = z
   })
   .openapi("Error");
 
+/**
+ * Optional `festival_id` query param. When omitted, routes fall back to the
+ * worker's default festival from `c.env.FESTIVAL_ID`. Documented as such so
+ * Swagger users can discover and override it.
+ */
+export const FestivalIdQuerySchema = z.object({
+  festival_id: z
+    .string()
+    .min(1)
+    .optional()
+    .openapi({
+      param: { name: "festival_id", in: "query" },
+      example: "les-santes-2026",
+      description:
+        "Festival identifier. Defaults to the current edition if omitted. Discover all available IDs via `GET /v1/festivals`.",
+    }),
+});
+
 export const PaginationQuerySchema = z.object({
   limit: z.coerce
     .number()

@@ -61,12 +61,14 @@ app.get("/", (c) => {
     <p>Documentació interactiva: <a href="/docs">/docs</a> · OpenAPI: <a href="/doc">/doc</a></p>
     <h2>Exemples</h2>
     <ul>
-      <li><code>GET <a href="/v1/events">/v1/events</a></code> - tots els actes</li>
+      <li><code>GET <a href="/v1/festivals">/v1/festivals</a></code> - llista d'edicions disponibles</li>
+      <li><code>GET <a href="/v1/events">/v1/events</a></code> - tots els actes (filtrable per <code>?festival_id=</code>)</li>
       <li><code>GET <a href="/v1/days">/v1/days</a></code> - dies de la festa</li>
       <li><code>GET <a href="/v1/locations">/v1/locations</a></code> - espais</li>
       <li><code>GET <a href="/v1/announcements">/v1/announcements</a></code> - avisos</li>
       <li><code>GET <a href="/v1/festival">/v1/festival</a></code> - informació general</li>
     </ul>
+    <p><small>Tots els endpoints accepten <code>?festival_id=&lt;id&gt;</code>. Per defecte retornen l'edició actual.</small></p>
     <hr />
     <p><small>Desenvolupat per <a href="https://polgubau.com">Pol Gubau Amores</a>. Dades sota <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a> · Atribució obligatòria.</small></p>
   </body>

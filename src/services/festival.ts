@@ -4,6 +4,16 @@ import type { Festival, Day } from "../schemas/festival";
 export class FestivalService {
   constructor(private db: SupabaseClient) {}
 
+  async listAll(): Promise<Festival[]> {
+    const { data, error } = await this.db
+      .from("festivals")
+      .select("*")
+      .order("year", { ascending: false });
+
+    if (error) throw error;
+    return (data ?? []) as Festival[];
+  }
+
   async getFestival(id: string): Promise<Festival | null> {
     const { data, error } = await this.db
       .from("festivals")

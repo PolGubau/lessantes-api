@@ -42,11 +42,10 @@ export class EventService {
     };
   }
 
-  async findById(festivalId: string, id: string): Promise<Event | null> {
+  async findById(id: string): Promise<Event | null> {
     const { data, error } = await this.db
       .from("events")
       .select("*")
-      .eq("festival_id", festivalId)
       .eq("id", id)
       .maybeSingle();
 
