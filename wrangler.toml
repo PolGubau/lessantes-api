@@ -1,0 +1,23 @@
+name = "les-santes-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Public-facing config (non-secret)
+[vars]
+FESTIVAL_ID = "les-santes-2026"
+API_VERSION = "v1"
+DATA_LICENSE_URL = "https://creativecommons.org/licenses/by/4.0/"
+
+# Secrets (set via `wrangler secret put`):
+#   SUPABASE_URL
+#   SUPABASE_ANON_KEY
+
+# Observability
+[observability]
+enabled = true
+
+# Optional custom route (configure DNS after first deploy)
+# [[routes]]
+# pattern = "api.lessantes.cat/*"
+# zone_name = "lessantes.cat"
